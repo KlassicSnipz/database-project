@@ -1,8 +1,8 @@
 import os
 
 import pandas as pd
-import psycopg2
-from sqlalchemy import create_engine
+import psycopg2 #Allows you to connect to PostgreSQL and run SQL commands from Python
+from sqlalchemy import create_engine  # Allows you to connect to PostgreSQL and run SQL commands from Python
 from dotenv import load_dotenv
 
 # Chunk 1 — find where the files are, relative to this script.
@@ -22,7 +22,6 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 if not all([DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD]):
     raise RuntimeError("Missing DB_* variables — check .env in the project root.")
 
-print(f"[chunk 2] target: {DB_USER}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
 
 # Chunk 3 — run staging_schema.sql: creates the `stage` schema,
 with open(os.path.join(SCRIPT_DIR, "staging_schema.sql"), encoding="utf-8") as f:
@@ -34,7 +33,6 @@ conn.autocommit = True
 conn.cursor().execute(schema_sql)
 conn.close()
 
-print("[chunk 3] staging_schema.sql executed — tables created and emptied")
 
 # Chunk 4 — one SQLAlchemy engine for the loading, and an explicit
 engine = create_engine(
@@ -78,7 +76,5 @@ for fname, table_name in CSV_TO_TABLE.items():
     db_count = pd.read_sql(f"SELECT COUNT(*) AS n FROM {db_table}", engine)["n"][0]
     status = "PASS" if db_count == len(df) else "FAIL"
 
-    print(f"[chunk 5] {fname}: {len(df)} rows -> {db_table} — {status}")
-
 engine.dispose()
-print("[done] staging load complete")
+print("staging load complete")
